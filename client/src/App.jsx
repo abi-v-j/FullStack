@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Card, IconButton, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material'
+import { Box, Button, Card, FormControl, IconButton, InputLabel, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material'
 import axios from 'axios'
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -17,27 +17,27 @@ const App = () => {
       districtName: district
     }
 
-    if(districtEditId === null){
+    if (districtEditId === null) {
       axios.post("http://localhost:5000/District", data).then((res) => {
         setDistrict("")
         fetchDistrict()
-  
+
         alert(res.data.message)
       }).catch((err) => {
         console.error(err)
       })
     }
-    else{
+    else {
       axios.put(`http://localhost:5000/District/${districtEditId}`, data).then((res) => {
         setDistrict("")
         fetchDistrict()
-  
+
         alert(res.data.message)
       }).catch((err) => {
         console.error(err)
       })
     }
-   
+
 
   }
 
@@ -88,6 +88,23 @@ const App = () => {
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
         <Card sx={{ height: 120, p: 6 }}>
           <Stack spacing={2} direction="row" component={'form'} onSubmit={handleSubmit}>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Age</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={""}
+                label="District"
+              >
+                {districtRows && districtRows.map((row, index) => (
+
+                  <MenuItem  value={row._id}>{row.districtName}</MenuItem>
+                ))}
+
+              </Select>
+            </FormControl>
+
+
             <TextField id="outlined-basic" label="District" variant="outlined" value={district} onChange={(e) => setDistrict(e.target.value)} />
             <Button type='submit' sx={{ width: 200 }} variant="contained">Save</Button>
           </Stack>
@@ -116,10 +133,10 @@ const App = () => {
                 <TableCell >
                   <Stack direction={'row'}>
 
-                    <IconButton aria-label="delete" onClick={()=>handleDelete(row._id)}>
+                    <IconButton aria-label="delete" onClick={() => handleDelete(row._id)}>
                       <DeleteIcon />
                     </IconButton>
-                    <IconButton aria-label="edit" onClick={()=>handleEditFech(row._id)}>
+                    <IconButton aria-label="edit" onClick={() => handleEditFech(row._id)}>
                       <EditIcon />
                     </IconButton>
                   </Stack>

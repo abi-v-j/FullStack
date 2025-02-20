@@ -29,6 +29,57 @@ app.listen(port, () => {
 
 
 
+//AdminSchema
+
+const adminSchemaStructure = new mongoose.Schema({
+  adminName: {
+    type: String,
+    required: true,
+  },
+  adminEmail: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  adminPassword: {
+    type: String,
+    required: true,
+    minlength: 6,
+  },
+});
+const Admin = mongoose.model("adminSchema", adminSchemaStructure);
+
+//AdminPost
+
+app.post("/Admin", async (req, res) => {
+  try {
+    const { adminName, adminEmail, adminPassword } = req.body;
+
+    let admin = await Admin.findOne({ adminEmail });
+
+    if (admin) {
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Admin already exists" }] });
+    }
+
+    admin = new Admin({
+      adminName,
+      adminEmail,
+      adminPassword,
+    });
+
+    await admin.save();
+
+    res.json({ message: "Admin inserted successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("Server error");
+  }
+});
+
+
+
 
 
 const districtSchemaStructure = new mongoose.Schema({
@@ -131,3 +182,33 @@ app.put("/District/:id", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+
+
+app.post("/Login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+  
+    const admin = await Admin.findOne({
+      adminEmail: email,
+      adminPassword: password,
+    });
+    
+   
+    if (admin) {
+      res.send({
+        id: admin._id,
+        login: "Admin",
+      });
+    }
+    if (!admin && !developer && !user) {
+      res.send({
+        login: "error",
+      });
+    }
+  } catch (err) {
+    console.error("Error", err);
+  }
+});
+
+
