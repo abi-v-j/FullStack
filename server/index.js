@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const multer = require("multer");
 const port = 5000;
 
 
@@ -12,6 +13,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("./public"));
 
+
+
+const PATH = "./public/images";
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: PATH,
+    filename: function (req, file, cb) {
+      let origialname = file.originalname;
+      let ext = origialname.split(".").pop();
+      let filename = origialname.split(".").slice(0, -1).join(".");
+      cb(null, filename + "." + ext);
+    },
+  }),
+});
 
 app.listen(port, () => {
   try {
@@ -173,7 +188,7 @@ app.put("/District/:id", async (req, res) => {
   try {
     const id = req.params.id
     const { districtName } = req.body;
-   
+
     let district = await District.findByIdAndUpdate(id, { districtName }, { new: true });
 
     res.json({ message: "District updated successfully" });
@@ -188,13 +203,13 @@ app.put("/District/:id", async (req, res) => {
 app.post("/Login", async (req, res) => {
   try {
     const { email, password } = req.body;
-  
+
     const admin = await Admin.findOne({
       adminEmail: email,
       adminPassword: password,
     });
-    
-   
+
+
     if (admin) {
       res.send({
         id: admin._id,
@@ -212,3 +227,19 @@ app.post("/Login", async (req, res) => {
 });
 
 
+
+
+app.post('/userReg', upload.fields([{ name: 'proof' }, { name: 'photo' }]), (req, res) => {
+  console.log('Received data:', req.body);
+  console.log('Received files:', req.files);
+
+  const { name, email, address, contact, district, place } = req.body;
+  var fileValue = JSON.parse(JSON.stringify(req.files));
+  var profileimgsrc = `http://127.0.0.1:${port}/images/${fileValue.photo[0].filename}`;
+  var proofimgsrc = `http://127.0.0.1:${port}/images/${fileValue.proof[0].filename}`;
+
+  // Log the data for debugging
+  console.log('Processed data:', { name, email, address, contact, district, place, profileimgsrc, proofimgsrc });
+
+  res.status(201).send({ message: 'Registration successful', data: { name, email, address, contact, district, place, proofimgsrc, profileimgsrc } });
+});
